@@ -1,0 +1,26 @@
+name: test
+
+# Installs the manifest with Scoop on Windows and runs the binary.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Scoop
+        shell: pwsh
+        run: |
+          Invoke-RestMethod -Uri https://get.scoop.sh -OutFile install.ps1
+          .\install.ps1 -RunAsAdmin
+          Join-Path (Resolve-Path ~).Path "scoop\shims" >> $Env:GITHUB_PATH
+      - name: Install gpunz from this checkout
+        shell: pwsh
+        run: scoop install .\bucket\gpunz.json
+      - name: Run it
+        shell: pwsh
+        run: gpunz version
